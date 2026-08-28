@@ -81,9 +81,9 @@ A custom Go script is provided to load test the server. It automatically creates
 
 Run it with:
 ```bash
-go run scripts/loadtest.go -c 50 -d 10s
+go run scripts/loadtest.go -c 50 -d 10s -v
 ```
-*(Flags: `-c` sets concurrency, `-d` sets test duration)*
+*(Flags: `-c` sets concurrency, `-d` sets test duration, `-v` enables verbose request logging)*
 
 ### Build
 

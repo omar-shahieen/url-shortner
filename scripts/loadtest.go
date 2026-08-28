@@ -17,6 +17,7 @@ func main() {
 	baseURL := flag.String("url", "http://localhost:8080", "Base URL of the shortener")
 	concurrency := flag.Int("c", 50, "Number of concurrent workers")
 	duration := flag.Duration("d", 10*time.Second, "Duration of the test")
+	verbose := flag.Bool("v", false, "Enable verbose logging for each request")
 	flag.Parse()
 
 	log.Printf("Starting load test on %s with %d workers for %v", *baseURL, *concurrency, *duration)
@@ -41,7 +42,7 @@ func main() {
 	var wg sync.WaitGroup
 	for i := 0; i < *concurrency; i++ {
 		wg.Add(1)
-		go func() {
+		go func(workerID int) {
 			defer wg.Done()
 			client := &http.Client{
 				Timeout: 2 * time.Second,
@@ -56,8 +57,13 @@ func main() {
 
 				resp, err := client.Get(targetURL)
 				
+				latency := time.Since(reqStart)
+				
 				if err != nil {
 					failures.Add(1)
+					if *verbose {
+						log.Printf("[Worker %d] GET %s -> ERROR: %v (latency: %v)\n", workerID, targetURL, err, latency)
+					}
 					continue
 				}
 				
@@ -70,10 +76,14 @@ func main() {
 				} else {
 					failures.Add(1)
 				}
+				
+				if *verbose {
+					log.Printf("[Worker %d] GET %s -> Status: %d (latency: %v)\n", workerID, targetURL, resp.StatusCode, latency)
+				}
 
-				totalTime.Add(time.Since(reqStart).Microseconds())
+				totalTime.Add(latency.Microseconds())
 			}
-		}()
+		}(i)
 	}
 
 	wg.Wait()
