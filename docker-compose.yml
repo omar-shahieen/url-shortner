@@ -1,0 +1,12 @@
+services:
+  url-shortener:
+    build: .
+    ports:
+      - "8080:8080"
+    volumes:
+      # Persist the SQLite database across container restarts.
+      - url-shortener-data:/data
+    restart: unless-stopped
+
+volumes:
+  url-shortener-data:

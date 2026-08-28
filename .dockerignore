@@ -1,0 +1,29 @@
+# Build artifacts
+url-shortener
+*.db
+
+# Test cache
+*.test
+*.out
+
+# Go module cache (never needed in the image)
+vendor/
+
+# Editor / OS noise
+.DS_Store
+Thumbs.db
+*.swp
+*.swo
+
+# Git metadata
+.git/
+.gitignore
+
+# CI/CD / Docker meta
+.dockerignore
+docker-compose.yml
+Dockerfile
+
+# Documentation
+*.md
+implmentation.md
