@@ -8,7 +8,7 @@
 
 ### Phase 1 — Domain model (no I/O)
 
-- `model.URL`: `Code`, `OriginalURL`, `CreatedAt`, `ExpiresAt *time.Time`, `ClickCount`, `IsCustomAlias bool` , `CreatedAt` , `UpdatedAt`
+- `model.URL`: `Code`, `OriginalURL`, `CreatedAt`, `ExpiresAt *time.Time`, `ClickCount`, `IsCustomAlias bool` , `CreatedAt`
 - Sentinel errors: `ErrNotFound`, `ErrAliasTaken`, `ErrInvalidAlias`, `ErrCodeGenerationExhausted`, `ErrExpired`
 - Unit tests for model helpers (e.g. `IsExpired()`)
 - add validation and json parsing to url struct

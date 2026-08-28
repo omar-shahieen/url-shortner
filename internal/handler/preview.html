@@ -1,81 +1,175 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>URL Shortener</title>
-    <style>
-      :root { color-scheme: light dark; font-family: Inter, system-ui, sans-serif; }
-      body { align-items: center; background: #101828; display: flex; justify-content: center; margin: 0; min-height: 100vh; }
-      main { background: #fff; border-radius: 16px; box-shadow: 0 20px 50px #0005; color: #101828; max-width: 560px; padding: 2.5rem; width: min(90vw, 560px); }
-      h1 { margin-top: 0; }
-      p { color: #475467; }
-      form { display: grid; gap: 1rem; margin-top: 2rem; }
-      label { display: grid; font-size: .9rem; font-weight: 600; gap: .4rem; }
-      input { border: 1px solid #d0d5dd; border-radius: 8px; font: inherit; padding: .75rem; }
-      button { background: #175cd3; border: 0; border-radius: 8px; color: #fff; cursor: pointer; font: inherit; font-weight: 700; padding: .8rem 1rem; }
-      button:disabled { cursor: wait; opacity: .7; }
-      #result { background: #ecfdf3; border-radius: 8px; display: none; margin-top: 1.5rem; padding: 1rem; }
-      #error { color: #b42318; display: none; margin-top: 1.5rem; }
-      #result a { color: #175cd3; font-weight: 700; word-break: break-all; }
-    </style>
-  </head>
-  <body>
-    <main>
-      <h1>URL Shortener</h1>
-      <p>Create a short, shareable link.</p>
-      <form id="shorten-form">
-        <label>
-          Destination URL
-          <input id="original-url" type="url" placeholder="https://example.com" required>
-        </label>
-        <label>
-          Custom alias <small>(optional)</small>
-          <input id="custom-alias" type="text" minlength="3" maxlength="32" pattern="[A-Za-z0-9_-]+" placeholder="my-link">
-        </label>
-        <button type="submit">Shorten URL</button>
-      </form>
-      <p id="error" role="alert"></p>
-      <section id="result" aria-live="polite">
-        Your short link: <a id="short-link" href="#"></a>
-      </section>
-    </main>
-    <script>
-      const form = document.querySelector('#shorten-form');
-      const button = form.querySelector('button');
-      const result = document.querySelector('#result');
-      const error = document.querySelector('#error');
-      const shortLink = document.querySelector('#short-link');
 
-      form.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        result.style.display = 'none';
-        error.style.display = 'none';
-        button.disabled = true;
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>URL Shortener</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: Inter, system-ui, sans-serif;
+    }
 
-        try {
-          const response = await fetch('/api/shorten', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              originalUrl: document.querySelector('#original-url').value,
-              customAlias: document.querySelector('#custom-alias').value
-            })
-          });
-          const body = await response.json();
-          if (!response.ok) throw new Error(body.error || 'Unable to shorten this URL.');
+    body {
+      align-items: center;
+      background: #101828;
+      display: flex;
+      justify-content: center;
+      margin: 0;
+      min-height: 100vh;
+    }
 
-          const href = new URL('/' + body.code, window.location.origin).href;
-          shortLink.href = href;
-          shortLink.textContent = href;
-          result.style.display = 'block';
-        } catch (err) {
-          error.textContent = err.message;
-          error.style.display = 'block';
-        } finally {
-          button.disabled = false;
+    main {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 20px 50px #0005;
+      color: #101828;
+      max-width: 560px;
+      padding: 2.5rem;
+      width: min(90vw, 560px);
+    }
+
+    h1 {
+      margin-top: 0;
+    }
+
+    p {
+      color: #475467;
+    }
+
+    form {
+      display: grid;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    label {
+      display: grid;
+      font-size: .9rem;
+      font-weight: 600;
+      gap: .4rem;
+    }
+
+    input {
+      border: 1px solid #d0d5dd;
+      border-radius: 8px;
+      font: inherit;
+      padding: .75rem;
+    }
+
+    button {
+      background: #175cd3;
+      border: 0;
+      border-radius: 8px;
+      color: #fff;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      padding: .8rem 1rem;
+    }
+
+    button:disabled {
+      cursor: wait;
+      opacity: .7;
+    }
+
+    #result {
+      background: #ecfdf3;
+      border-radius: 8px;
+      display: none;
+      margin-top: 1.5rem;
+      padding: 1rem;
+    }
+
+    #error {
+      color: #b42318;
+      display: none;
+      margin-top: 1.5rem;
+    }
+
+    #result a {
+      color: #175cd3;
+      font-weight: 700;
+      word-break: break-all;
+    }
+  </style>
+</head>
+
+<body>
+  <main>
+    <h1>URL Shortener</h1>
+    <p>Create a short, shareable link.</p>
+    <form id="shorten-form">
+      <label>
+        Destination URL
+        <input id="original-url" type="url" placeholder="https://example.com" required>
+      </label>
+      <label>
+        Custom alias <small>(optional)</small>
+        <input id="custom-alias" type="text" minlength="3" maxlength="32" pattern="[A-Za-z0-9_-]+"
+          placeholder="my-link">
+      </label>
+      <label>
+        expires in seconds <small> (optional)</small>
+        <input id="expires-at" type="number" min="1" max="315360000" placeholder="300">
+      </label>
+      <button type="submit">Shorten URL</button>
+    </form>
+    <p id="error" role="alert"></p>
+    <section id="result" aria-live="polite">
+      Your short link: <a id="short-link" href="#"></a>
+    </section>
+  </main>
+  <script>
+    const form = document.querySelector('#shorten-form');
+    const button = form.querySelector('button');
+    const result = document.querySelector('#result');
+    const error = document.querySelector('#error');
+    const shortLink = document.querySelector('#short-link');
+
+    form.addEventListener('submit', async (event) => {
+      event.preventDefault();
+      result.style.display = 'none';
+      error.style.display = 'none';
+      button.disabled = true;
+
+      try {
+        const originalUrl = document.querySelector('#original-url').value.trim();
+        const customAlias = document.querySelector('#custom-alias').value.trim();
+        const expiresSeconds = document.querySelector('#expires-at').value.trim();
+
+        // Construct clean payload matching Go struct expected formats
+        const payload = { originalUrl };
+
+        if (customAlias) {
+          payload.customAlias = customAlias;
         }
-      });
-    </script>
-  </body>
+
+        if (expiresSeconds) {
+          const seconds = parseInt(expiresSeconds, 10);
+          payload.expiresAt = new Date(Date.now() + seconds * 1000).toISOString();
+        }
+        const response = await fetch('/api/shorten', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const body = await response.json();
+        if (!response.ok) throw new Error(body.error || 'Unable to shorten this URL.');
+
+        const href = new URL('/' + body.code, window.location.origin).href;
+        shortLink.href = href;
+        shortLink.textContent = href;
+        result.style.display = 'block';
+      } catch (err) {
+        error.textContent = err.message;
+        error.style.display = 'block';
+      } finally {
+        button.disabled = false;
+      }
+    });
+  </script>
+</body>
+
 </html>

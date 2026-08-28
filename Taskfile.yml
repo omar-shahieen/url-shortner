@@ -8,7 +8,7 @@ tasks:
   run:
     desc: run all project packages for dev
     cmds:
-      - go run ./...
+      - go run ./cmd/server/main.go
   test:
     desc: Run the test suite
     cmds:
