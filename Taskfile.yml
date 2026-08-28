@@ -1,0 +1,15 @@
+version: "3"
+
+tasks:
+  build:
+    desc: Build all project packages
+    cmds:
+      - go build ./...
+  test:
+    desc: Run the test suite
+    cmds:
+      - go test ./...
+  vet:
+    desc: Run Go's static analyzer
+    cmds:
+      - go vet ./...
