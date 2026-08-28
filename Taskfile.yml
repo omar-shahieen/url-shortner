@@ -5,6 +5,10 @@ tasks:
     desc: Build all project packages
     cmds:
       - go build ./...
+  run:
+    desc: run all project packages for dev
+    cmds:
+      - go run ./...
   test:
     desc: Run the test suite
     cmds:

@@ -1,20 +1,23 @@
-package handler
+package handler_test
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
 
+	"github.com/omar-shahieen/url-shortner/internal/handler"
 	"github.com/omar-shahieen/url-shortner/internal/model"
 	"github.com/omar-shahieen/url-shortner/internal/repository/inmemory"
+	"github.com/omar-shahieen/url-shortner/internal/routers"
 	"github.com/omar-shahieen/url-shortner/internal/service"
 )
 
 func TestShortenRedirectAndStats(t *testing.T) {
-	router := New(service.New(inmemory.New()))
+	router := newRouter()
 	body := []byte(`{"originalUrl":"https://example.com/articles/go","customAlias":"go-guide"}`)
 	shortenRequest := httptest.NewRequest(http.MethodPost, "/api/shorten", bytes.NewReader(body))
 	shortenResponse := httptest.NewRecorder()
@@ -59,7 +62,7 @@ func TestShortenRedirectAndStats(t *testing.T) {
 }
 
 func TestShortenRejectsInvalidRequest(t *testing.T) {
-	router := New(service.New(inmemory.New()))
+	router := newRouter()
 
 	tests := []struct {
 		name string
@@ -84,7 +87,7 @@ func TestShortenRejectsInvalidRequest(t *testing.T) {
 }
 
 func TestRedirectUnknownCode(t *testing.T) {
-	router := New(service.New(inmemory.New()))
+	router := newRouter()
 	request := httptest.NewRequest(http.MethodGet, "/missing", nil)
 	response := httptest.NewRecorder()
 
@@ -95,7 +98,7 @@ func TestRedirectUnknownCode(t *testing.T) {
 }
 
 func TestPreviewPage(t *testing.T) {
-	router := New(service.New(inmemory.New()))
+	router := newRouter()
 	request := httptest.NewRequest(http.MethodGet, "/", nil)
 	response := httptest.NewRecorder()
 
@@ -109,4 +112,14 @@ func TestPreviewPage(t *testing.T) {
 	if !strings.Contains(response.Body.String(), "URL Shortener") {
 		t.Error("GET / response does not contain preview page content")
 	}
+}
+
+type healthyChecker struct{}
+
+func (healthyChecker) PingContext(context.Context) error {
+	return nil
+}
+
+func newRouter() http.Handler {
+	return routers.New(handler.New(service.New(inmemory.New())), healthyChecker{})
 }

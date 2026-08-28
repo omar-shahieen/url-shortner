@@ -24,3 +24,8 @@ go.work.sum
 
 # Local environment variables
 .env
+
+# Local SQLite database files
+*.db
+*.db-shm
+*.db-wal

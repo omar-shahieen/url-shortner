@@ -20,18 +20,13 @@ type Handler struct {
 	service *service.Service
 }
 
-// New returns the application's HTTP router.
-func New(service *service.Service) http.Handler {
-	handler := &Handler{service: service}
-	mux := http.NewServeMux()
-	mux.HandleFunc("GET /{$}", handler.preview)
-	mux.HandleFunc("POST /api/shorten", handler.shorten)
-	mux.HandleFunc("GET /api/stats/{code}", handler.stats)
-	mux.HandleFunc("GET /{code}", handler.redirect)
-	return mux
+// New creates an HTTP handler backed by service.
+func New(service *service.Service) *Handler {
+	return &Handler{service: service}
 }
 
-func (h *Handler) preview(w http.ResponseWriter, _ *http.Request) {
+// Preview serves the browser preview page.
+func (h *Handler) Preview(w http.ResponseWriter, _ *http.Request) {
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	_, _ = w.Write(previewHTML)
 }
@@ -42,7 +37,8 @@ type shortenRequest struct {
 	ExpiresAt   *time.Time `json:"expiresAt"`
 }
 
-func (h *Handler) shorten(w http.ResponseWriter, r *http.Request) {
+// Shorten creates a short URL from a JSON request.
+func (h *Handler) Shorten(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	var request shortenRequest
@@ -62,7 +58,8 @@ func (h *Handler) shorten(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, http.StatusCreated, url)
 }
 
-func (h *Handler) redirect(w http.ResponseWriter, r *http.Request) {
+// Redirect resolves a short code and redirects to its destination.
+func (h *Handler) Redirect(w http.ResponseWriter, r *http.Request) {
 	url, err := h.service.Resolve(r.Context(), r.PathValue("code"))
 	if err != nil {
 		writeServiceError(w, err)
@@ -72,7 +69,8 @@ func (h *Handler) redirect(w http.ResponseWriter, r *http.Request) {
 	http.Redirect(w, r, url.OriginalURL, http.StatusFound)
 }
 
-func (h *Handler) stats(w http.ResponseWriter, r *http.Request) {
+// Stats returns metadata for a short code.
+func (h *Handler) Stats(w http.ResponseWriter, r *http.Request) {
 	url, err := h.service.Stats(r.Context(), r.PathValue("code"))
 	if err != nil {
 		writeServiceError(w, err)
