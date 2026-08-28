@@ -111,6 +111,19 @@ func (s *Service) Resolve(ctx context.Context, code string) (*model.URL, error) 
 	return url, nil
 }
 
+// Stats returns an active URL without recording a click.
+func (s *Service) Stats(ctx context.Context, code string) (*model.URL, error) {
+	url, err := s.repository.FindByCode(ctx, code)
+	if err != nil {
+		return nil, err
+	}
+	if url.IsExpired() {
+		return nil, model.ErrExpired
+	}
+
+	return url, nil
+}
+
 func cloneURL(url *model.URL) *model.URL {
 	clone := *url
 	clone.ExpiresAt = cloneTime(url.ExpiresAt)

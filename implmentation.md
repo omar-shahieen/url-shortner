@@ -32,6 +32,7 @@
 
 - `net/http` with Go 1.22+ pattern routing: `POST /api/shorten`, `GET /{code}`, `GET /api/stats/{code}`
 - Handler tests via `httptest`, still backed by `inmemory.Repository`
+- Browser preview page at `GET /` for creating and opening short links
 
 → `go run cmd/server/main.go` gives a working, curl-able shortener — not yet persistent.
 
