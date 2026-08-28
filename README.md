@@ -75,6 +75,16 @@ The server starts on **http://localhost:8080** and creates `url-shortener.db` in
 go test ./...
 ```
 
+### Load Testing
+
+A custom Go script is provided to load test the server. It automatically creates a single short URL (to avoid the `POST /api/shorten` rate limit) and then spawns concurrent workers to hammer the `GET /api/stats/{code}` endpoint to measure read performance.
+
+Run it with:
+```bash
+go run scripts/loadtest.go -c 50 -d 10s
+```
+*(Flags: `-c` sets concurrency, `-d` sets test duration)*
+
 ### Build
 
 ```bash
