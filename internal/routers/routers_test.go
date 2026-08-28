@@ -8,23 +8,25 @@ import (
 	"testing"
 
 	"github.com/omar-shahieen/url-shortner/internal/handler"
+	"github.com/omar-shahieen/url-shortner/internal/middleware"
 	"github.com/omar-shahieen/url-shortner/internal/repository/inmemory"
 	"github.com/omar-shahieen/url-shortner/internal/service"
 )
 
 func TestHealth(t *testing.T) {
 	tests := []struct {
-		name       string
+		name        string
 		healthCheck HealthChecker
-		wantStatus int
+		wantStatus  int
 	}{
-		{name: "database available", healthCheck: healthChecker{} , wantStatus: http.StatusOK},
+		{name: "database available", healthCheck: healthChecker{}, wantStatus: http.StatusOK},
 		{name: "database unavailable", healthCheck: failingHealthChecker{}, wantStatus: http.StatusServiceUnavailable},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			router := New(handler.New(service.New(inmemory.New())), tt.healthCheck)
+			rl := middleware.NewRateLimiter(100, 100)
+			router := New(handler.New(service.New(inmemory.New())), tt.healthCheck, rl)
 			request := httptest.NewRequest(http.MethodGet, "/health", nil)
 			response := httptest.NewRecorder()
 

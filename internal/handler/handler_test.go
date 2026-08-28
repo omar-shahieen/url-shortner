@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/omar-shahieen/url-shortner/internal/handler"
+	"github.com/omar-shahieen/url-shortner/internal/middleware"
 	"github.com/omar-shahieen/url-shortner/internal/model"
 	"github.com/omar-shahieen/url-shortner/internal/repository/inmemory"
 	"github.com/omar-shahieen/url-shortner/internal/routers"
@@ -121,5 +122,6 @@ func (healthyChecker) PingContext(context.Context) error {
 }
 
 func newRouter() http.Handler {
-	return routers.New(handler.New(service.New(inmemory.New())), healthyChecker{})
+	rl := middleware.NewRateLimiter(1000, 1000) // generous limits for tests
+	return routers.New(handler.New(service.New(inmemory.New())), healthyChecker{}, rl)
 }

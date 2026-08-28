@@ -7,6 +7,7 @@ import (
 	"net/http"
 
 	"github.com/omar-shahieen/url-shortner/internal/handler"
+	"github.com/omar-shahieen/url-shortner/internal/middleware"
 )
 
 // HealthChecker verifies whether a backing dependency is reachable.
@@ -14,14 +15,16 @@ type HealthChecker interface {
 	PingContext(context.Context) error
 }
 
-// New returns the application's HTTP router.
-func New(handler *handler.Handler, healthChecker HealthChecker) http.Handler {
+// New returns the application's HTTP router with logging, panic recovery, and
+// per-IP rate limiting on POST /api/shorten applied.
+func New(h *handler.Handler, healthChecker HealthChecker, rl *middleware.RateLimiter) http.Handler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /{$}", handler.Preview)
-	mux.HandleFunc("POST /api/shorten", handler.Shorten)
-	mux.HandleFunc("GET /api/stats/{code}", handler.Stats)
+	mux.HandleFunc("GET /{$}", h.Preview)
+	// Rate-limit only the write endpoint.
+	mux.Handle("POST /api/shorten", middleware.Limit(rl, http.HandlerFunc(h.Shorten)))
+	mux.HandleFunc("GET /api/stats/{code}", h.Stats)
 	mux.HandleFunc("GET /health", health(healthChecker))
-	mux.HandleFunc("GET /{code}", handler.Redirect)
+	mux.HandleFunc("GET /{code}", h.Redirect)
 	return mux
 }
 
