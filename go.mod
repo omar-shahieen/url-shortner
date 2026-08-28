@@ -1,6 +1,6 @@
 module github.com/omar-shahieen/url-shortner
 
-go 1.27.0
+go 1.24.0
 
 require modernc.org/sqlite v1.57.0
 
