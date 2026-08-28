@@ -1,4 +1,4 @@
-module github/omar-shahieen/url-shortner
+module github.com/omar-shahieen/url-shortner
 
 go 1.27.0
 
