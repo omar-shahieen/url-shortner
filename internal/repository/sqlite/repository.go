@@ -116,3 +116,37 @@ func (r *Repository) Exists(ctx context.Context, code string) (bool, error) {
 
 	return exists, nil
 }
+
+// AllCodes returns every short code currently stored. It is used by the
+// caching layer to rebuild the bloom filter at startup.
+func (r *Repository) AllCodes(ctx context.Context) ([]string, error) {
+	rows, err := r.db.QueryContext(ctx, `SELECT code FROM urls`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var codes []string
+	for rows.Next() {
+		var code string
+		if err := rows.Scan(&code); err != nil {
+			return nil, err
+		}
+		codes = append(codes, code)
+	}
+	return codes, rows.Err()
+}
+
+// DeleteExpired removes all rows whose expires_at is in the past. It returns
+// the number of rows deleted. Rows with a NULL expires_at are never deleted.
+func (r *Repository) DeleteExpired(ctx context.Context) (int64, error) {
+	result, err := r.db.ExecContext(ctx,
+		`DELETE FROM urls WHERE expires_at IS NOT NULL AND expires_at < ?`,
+		time.Now().UTC().Format(time.RFC3339Nano),
+	)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected()
+}
+
